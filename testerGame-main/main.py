@@ -38,6 +38,10 @@ BADSPEEDHIGH = 115
 
 HEARTS = 3
 
+SCORE = 0
+ 
+
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # IMAGE INITIALIZATION
@@ -52,6 +56,12 @@ carrotImg = pygame.transform.scale(carrotImg, (PLAYERSIZE, PLAYERSIZE))
 grassImg = pygame.image.load('testerGame-main\grass.jpg')
 grassImg = pygame.transform.scale(grassImg, (50, GROUNDLVL))
 cloudImg = pygame.image.load('testerGame-main\cloud.png')
+cloudImg1 = pygame.transform.scale(cloudImg, (80, 40))
+cloudImg2 = pygame.transform.scale(cloudImg, (60, 30))
+cloudImg3 = pygame.transform.scale(cloudImg, (100, 50))
+cloudImg4 = pygame.transform.scale(cloudImg, (50, 25 ))
+
+cloudSizes = [cloudImg1, cloudImg2, cloudImg3, cloudImg4]
 
 dogImg = pygame.image.load('testerGame-main/foods/hotdog.png')
 dogImg = pygame.transform.scale(dogImg, (BADSIZE, BADSIZE))
@@ -134,30 +144,36 @@ class bad(pygame.sprite.Sprite):
 
     def getRate(self):
         return self.rate
+
     
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, HIGHSCORE
 
     pygame.init()
-
+    HIGHSCORE = 0
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
 
     showStartScreen()
     while True:
-        runGame()
-        showGameOverScreen()
+        SCORE = runGame()
+        if SCORE > HIGHSCORE:
+            HIGHSCORE = SCORE
+        showGameOverScreen(SCORE, HIGHSCORE)
 
 def runGame():
-
+ 
     bloodyCount = 0
+    levelUpCount = 0
     
     health = HEARTS
     maxHealth = HEARTS
+    
+    SCORE = 0
     
     BACKCOLOR = BGCOLOR
 
@@ -181,13 +197,18 @@ def runGame():
     good_sprites_list.add(player1)
     
     heartList = pygame.sprite.Group()
+    
+    cloudList = []
+    for i in range(7):
+        cloudList.append([random.randint(-1500, -100), random.randint(-5, int(WINDOWHEIGHT/2)), random.randint(1, 4), random.choice(cloudSizes)])
+    
 
     while (health > 0):
         # tick control
         speedCounter += 1
-        
+        SCORE += 1 * (dropRate) * 10
         #generate heart maybe
-        if (random.random() <= 0.0005):
+        if (random.random() <= 0.00075 * (1/health)):
             print("build heart")
             heart = bad(heartImg, buildBad(), 100)
             heartList.add(heart)
@@ -215,11 +236,15 @@ def runGame():
             terminate()
 
         
-        if (speedCounter % 360 == 0):
-            numBads += 2
+        if (speedCounter % 720 == 0 and speedCounter != 0):
+            numBads += 2 * 1
             dropRate += 0.5
             print("level up")
             print(speedCounter)
+            levelUpCount = 50
+            for i in range(30):
+                cloudList.append([random.randint(-1500, -100), random.randint(-5, int(WINDOWHEIGHT/2)), random.randint(1, 4), random.choice(cloudSizes)])
+            
         
         if (len(badsList) < numBads):
             for i in range(numBads-len(badsList)):
@@ -228,6 +253,9 @@ def runGame():
         # Makes background
         DISPLAYSURF.fill(BACKCOLOR) 
 
+        if levelUpCount > 0:
+            levelUpCount -= 1
+            showLevelUp(player1)
         
         dropBads(badsList, dropRate)
         dropBads(heartList, 1)
@@ -238,7 +266,6 @@ def runGame():
             health = maxHealth
         
         if bloodyCount > 0:
-            #DISPLAYSURF.fill((255, 0, 0, 128))
             BACKCOLOR = RED
             bloodyCount -= 1
         elif bloodyCount < 0:
@@ -246,27 +273,35 @@ def runGame():
             bloodyCount += 1
         else:
             BACKCOLOR = SKYBLUE
+           
         
         for i in range(int(WINDOWWIDTH/50)+1):
             DISPLAYSURF.blit(grassImg, ((i*50)-5, WINDOWHEIGHT-GROUNDLVL))
         
+        
+        
         good_sprites_list.update()
         good_sprites_list.draw(DISPLAYSURF)
-        DISPLAYSURF.blit(carrotImg, player1.rect)
+        
 
         
         badsList.update()
         badsList.draw(DISPLAYSURF)
         
+        runClouds(cloudList, speedCounter, dropRate)
+        
         heartList.update()
         heartList.draw(DISPLAYSURF)
 
-        drawHealth(health, maxHealth)
+        showScore(SCORE)
+        showHealth(health, maxHealth)
+        DISPLAYSURF.blit(carrotImg, player1.rect)
 
         pygame.display.flip()
         #pygame.display.update()
         
         FPSCLOCK.tick(FPS)
+    return SCORE
                 
 def terminate():
     pygame.quit()
@@ -287,7 +322,7 @@ def checkForKeyPress():
         terminate()
     return keyUpEvents[0].key
 
-def drawHealth(health, maxHealth):
+def showHealth(health, maxHealth):
     mover = 70
     for i in range(maxHealth):
         if i < health:
@@ -297,9 +332,11 @@ def drawHealth(health, maxHealth):
         mover += 50
 
 def drawPressKeyMsg():
-    pressKeySurf = BASICFONT.render('Press any key to play', True, DARKGRAY)
+    pressKeySurf = BASICFONT.render('Press any key to play', True, BLACK)
     pressKeyRect = pressKeySurf.get_rect()
-    pressKeyRect.topleft = (WINDOWWIDTH - 195, WINDOWHEIGHT - 30)
+    pressKeyRect.midtop = (WINDOWWIDTH/2, WINDOWHEIGHT - 20)
+    pygame.draw.rect(DISPLAYSURF, SKYBLUE, pygame.Rect(pressKeyRect.left-5, pressKeyRect.top-6, pressKeyRect.width+10, pressKeyRect.height+12))
+    pygame.draw.rect(DISPLAYSURF, BLACK, pygame.Rect(pressKeyRect.left-5, pressKeyRect.top-6, pressKeyRect.width+10, pressKeyRect.height+12), 2, 1)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
     
 def showStartScreen():
@@ -331,17 +368,31 @@ def showStartScreen():
         degrees1 += 1 # rotate by 3 degrees each frame
         degrees2 += 2 # rotate by 7 degrees each frame
 
-def showGameOverScreen():
+def showGameOverScreen(score, highScore):
     gameOverFont = pygame.font.Font('freesansbold.ttf', 150)
-    gameSurf = gameOverFont.render('Game', True, RED)
-    overSurf = gameOverFont.render('Over', True, RED)
+    scoreFont = pygame.font.Font('freesansbold.ttf', 40)
+    gameSurf = gameOverFont.render('Game', True, BLACK)
+    overSurf = gameOverFont.render('Over', True, BLACK)
     gameRect = gameSurf.get_rect()
     overRect = overSurf.get_rect()
     gameRect.midtop = (WINDOWWIDTH / 2, 20)
     overRect.midtop = (WINDOWWIDTH / 2, gameRect.height + 10 + 25)
+    
+    scoreSurf = scoreFont.render('Final Score: ' + str(int(score/100)), True, BLACK)
+    scoreRect = scoreSurf.get_rect()
+    scoreRect.midtop = (WINDOWWIDTH/2, overRect.bottom + 35)
+    
+    scoreHSurf = scoreFont.render('High Score: ' + str(int(highScore/100)), True, BLACK)
+    scoreHRect = scoreHSurf.get_rect()
+    scoreHRect.midtop = (WINDOWWIDTH/2, scoreRect.bottom)
+
+    pygame.draw.rect(DISPLAYSURF, SKYBLUE, pygame.Rect(scoreHRect.left-12, scoreRect.top-12, scoreHRect.width+24, scoreHRect.height + scoreRect.height+16))
+    pygame.draw.rect(DISPLAYSURF, BLACK, pygame.Rect(scoreHRect.left-12, scoreRect.top-12, scoreHRect.width+24, scoreHRect.height + scoreRect.height+16), 2, 1)
 
     DISPLAYSURF.blit(gameSurf, gameRect)
     DISPLAYSURF.blit(overSurf, overRect)
+    DISPLAYSURF.blit(scoreSurf, scoreRect)
+    DISPLAYSURF.blit(scoreHSurf, scoreHRect)
     drawPressKeyMsg()
     pygame.display.update()
     pygame.time.wait(500)
@@ -351,12 +402,40 @@ def showGameOverScreen():
         if checkForKeyPress():
             pygame.event.get()
             return
+
+def showLevelUp(player1):
+    levelUpSurf = BASICFONT.render('Level Up!', True, GREEN, DARKGREEN)
+    levelUpRect = levelUpSurf.get_rect()
+    levelUpRect.midtop = (player1.rect.x + 15, player1.rect.y - 30)
+    DISPLAYSURF.blit(levelUpSurf, levelUpRect)
     
+
+def showScore(score):
+    scoreSurf = BASICFONT.render('Score: ' + str(int(score/100)), True, BLACK, WHITE)
+    scoreRect = scoreSurf.get_rect()
+    scoreRect.topleft = (10, 10)
+    pygame.draw.rect(DISPLAYSURF, WHITE, pygame.Rect(0, 0, scoreRect.right+10, 40))
+    pygame.draw.rect(DISPLAYSURF, BLACK, pygame.Rect(0, 0, scoreRect.right+10, 40), 2, 1)
+    DISPLAYSURF.blit(scoreSurf, scoreRect)
+
 def dropBads(bads, dropRate):
     for i in bads:
         i.rect.y += dropRate * (i.getRate() / 100)
         if i.rect.y > WINDOWHEIGHT - 50 - BADSIZE:
             bads.remove(i)
+
+def runClouds(cloudList, tick, rate):
+    for i in cloudList:
+        if tick % 2 == 0:
+            i[0] += (i[2] * rate)
+            if i[0] > WINDOWWIDTH + 150:
+                i[0] = random.randint(-1500, -100)
+                i[1] = random.randint(-5, int(WINDOWHEIGHT/2))
+                i[2] = random.randint(1, 4)
+                i[3] = random.choice(cloudSizes)
+        DISPLAYSURF.blit(i[3], (i[0], i[1]))
+
+
 
 if __name__ == '__main__':
     main()
