@@ -436,6 +436,5 @@ def runClouds(cloudList, tick, rate):
         DISPLAYSURF.blit(i[3], (i[0], i[1]))
 
 
-
 if __name__ == '__main__':
     main()
