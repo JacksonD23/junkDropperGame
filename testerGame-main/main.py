@@ -71,10 +71,16 @@ cookieImg = pygame.image.load('testerGame-main/foods\cookie.png')
 cookieImg = pygame.transform.scale(cookieImg, (BADSIZE, BADSIZE))
 pizzaImg = pygame.image.load('testerGame-main/foods\pizza.png')
 pizzaImg = pygame.transform.scale(pizzaImg, (BADSIZE, BADSIZE))
-milkImg = pygame.image.load('testerGame-main/foods\milkshake.png')
-milkImg = pygame.transform.scale(milkImg, (BADSIZE, BADSIZE))
+friesImg = pygame.image.load('testerGame-main/foods/fries.png')
+friesImg = pygame.transform.scale(friesImg, (BADSIZE, BADSIZE))
+burgImg = pygame.image.load('testerGame-main/foods/burger.png')
+burgImg = pygame.transform.scale(burgImg, (BADSIZE, BADSIZE))
+chocoImg = pygame.image.load('testerGame-main/foods/choco.png')
+chocoImg = pygame.transform.scale(chocoImg, (BADSIZE, BADSIZE))
+colaImg = pygame.image.load('testerGame-main/foods/cola.png')
+colaImg = pygame.transform.scale(colaImg, (BADSIZE, BADSIZE))
 
-badFoods = [dogImg, donutImg, cookieImg, pizzaImg, milkImg]
+badFoods = [dogImg, donutImg, cookieImg, pizzaImg, friesImg, burgImg, chocoImg, colaImg]
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -156,6 +162,7 @@ def main():
     HIGHSCORE = 0
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
+    pygame.display.set_caption("Junk Dropper v1.0")
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
 
     showStartScreen()
@@ -186,7 +193,6 @@ def runGame():
     for i in range(numBads):
         theBad = bad(random.choice(badFoods), buildBad(), random.randint(BADSPEEDLOW, BADSPEEDHIGH))
         badsList.add(theBad)
-        print(theBad.getRate())
 
     speedCounter = -1
 
@@ -242,7 +248,7 @@ def runGame():
             print("level up")
             print(speedCounter)
             levelUpCount = 50
-            for i in range(30):
+            for i in range(7):
                 cloudList.append([random.randint(-1500, -100), random.randint(-5, int(WINDOWHEIGHT/2)), random.randint(1, 4), random.choice(cloudSizes)])
             
         
@@ -309,7 +315,7 @@ def terminate():
 
 def buildBad():
     possibleLocations = range(3, WINDOWWIDTH-3, BADSIZE)
-    return [random.choice(possibleLocations), random.randint(-150, 0)]
+    return [random.choice(possibleLocations), random.randint(-350, 0)]
 
 def checkForKeyPress():
     if len(pygame.event.get(QUIT)) > 0:
