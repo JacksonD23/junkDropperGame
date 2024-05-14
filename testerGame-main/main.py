@@ -25,7 +25,6 @@ PINK      = (255, 105, 180)
 DARKPINK  = (170,  51, 106)
 BGCOLOR = SKYBLUE
 
-
 GROUNDLVL = 50
 JUMPHEIGHT = 21
 assert JUMPHEIGHT % 1.5 == 0, "Jump height must be a multiple of the fall speed"
@@ -40,8 +39,6 @@ HEARTS = 3
 
 SCORE = 0
  
-
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # IMAGE INITIALIZATION
@@ -138,8 +135,6 @@ class player(pygame.sprite.Sprite):
                 bloodyCount = -10
                 health += 1
         return health, bloodyCount
-    
-
 class bad(pygame.sprite.Sprite):
     def __init__(self, image, pos, rate):
         super().__init__()
@@ -150,8 +145,6 @@ class bad(pygame.sprite.Sprite):
 
     def getRate(self):
         return self.rate
-
-    
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -208,7 +201,6 @@ def runGame():
     for i in range(7):
         cloudList.append([random.randint(-1500, -100), random.randint(-5, int(WINDOWHEIGHT/2)), random.randint(1, 4), random.choice(cloudSizes)])
     
-
     while (health > 0):
         # tick control
         speedCounter += 1
@@ -241,7 +233,6 @@ def runGame():
         if key_pressed_is[K_ESCAPE]:
             terminate()
 
-        
         if (speedCounter % 720 == 0 and speedCounter != 0):
             numBads += 2 * 1
             dropRate += 0.5
@@ -251,7 +242,6 @@ def runGame():
             for i in range(7):
                 cloudList.append([random.randint(-1500, -100), random.randint(-5, int(WINDOWHEIGHT/2)), random.randint(1, 4), random.choice(cloudSizes)])
             
-        
         if (len(badsList) < numBads):
             for i in range(numBads-len(badsList)):
                 badsList.add(bad(random.choice(badFoods), buildBad(), random.randint(BADSPEEDLOW, BADSPEEDHIGH)))
@@ -280,16 +270,11 @@ def runGame():
         else:
             BACKCOLOR = SKYBLUE
            
-        
         for i in range(int(WINDOWWIDTH/50)+1):
             DISPLAYSURF.blit(grassImg, ((i*50)-5, WINDOWHEIGHT-GROUNDLVL))
         
-        
-        
         good_sprites_list.update()
         good_sprites_list.draw(DISPLAYSURF)
-        
-
         
         badsList.update()
         badsList.draw(DISPLAYSURF)
@@ -440,7 +425,6 @@ def runClouds(cloudList, tick, rate):
                 i[2] = random.randint(1, 4)
                 i[3] = random.choice(cloudSizes)
         DISPLAYSURF.blit(i[3], (i[0], i[1]))
-
 
 if __name__ == '__main__':
     main()
